@@ -1,0 +1,97 @@
+apiVersion: v1
+automountServiceAccountToken: true
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: custom
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: demo-chart
+    app.kubernetes.io/version: 1.16.0
+    helm.sh/chart: demo-chart-0.1.1
+  name: custom-demo-chart
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: custom
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: demo-chart
+    app.kubernetes.io/version: 1.16.0
+    helm.sh/chart: demo-chart-0.1.1
+  name: custom-demo-chart
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: http
+  selector:
+    app.kubernetes.io/instance: custom
+    app.kubernetes.io/name: demo-chart
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: custom
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: demo-chart
+    app.kubernetes.io/version: 1.16.0
+    helm.sh/chart: demo-chart-0.1.1
+  name: custom-demo-chart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: custom
+      app.kubernetes.io/name: demo-chart
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: custom
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: demo-chart
+        app.kubernetes.io/version: 1.16.0
+        helm.sh/chart: demo-chart-0.1.1
+    spec:
+      containers:
+      - image: nginx:1.16.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+        name: demo-chart
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+      serviceAccountName: custom-demo-chart
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    helm.sh/hook: test
+  labels:
+    app.kubernetes.io/instance: custom
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: demo-chart
+    app.kubernetes.io/version: 1.16.0
+    helm.sh/chart: demo-chart-0.1.1
+  name: custom-demo-chart-test-connection
+spec:
+  containers:
+  - args:
+    - custom-demo-chart:80
+    command:
+    - wget
+    image: busybox
+    name: wget
+  restartPolicy: Never
