@@ -1,0 +1,12 @@
+# dev/kustomization.yaml
+
+# helm gitops render-env -e dev -r https://github.com/yuan-shuo/helmChart -t v0.1.1
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - rendered/helm/helm-chart.yaml
+
+# patchesStrategicMerge:
+#   - patch.yaml
